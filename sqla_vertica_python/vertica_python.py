@@ -30,7 +30,7 @@ class VerticaDialect(PGDialect):
         'TIME': sqltypes.TIME(timezone=True),
         'TIMESTAMP': sqltypes.TIMESTAMP,
         'TIMESTAMP WITH TIMEZONE': sqltypes.TIMESTAMP(timezone=True),
-	'TIMESTAMPTZ': sqltypes.TIMESTAMP(timezone=True),
+        'TIMESTAMPTZ': sqltypes.TIMESTAMP(timezone=True),
         # Not supported yet
         # INTERVAL
 
@@ -53,24 +53,20 @@ class VerticaDialect(PGDialect):
         'MONEY': sqltypes.NUMERIC,
     }
 
-
     @classmethod
     def dbapi(cls):
         return __import__('vertica_python')
-
 
     def create_connect_args(self, url):
         opts = url.translate_connect_args(username='user')
         opts.update(url.query)
         return [[], opts]
 
-
     def has_schema(self, connection, schema):
         query = ("SELECT EXISTS (SELECT schema_name FROM v_catalog.schemata "
                  "WHERE schema_name='%s')") % (schema)
         rs = connection.execute(query)
         return bool(rs.scalar())
-
 
     def has_table(self, connection, table_name, schema=None):
         if schema is None:
@@ -83,7 +79,6 @@ class VerticaDialect(PGDialect):
         rs = connection.execute(query)
         return bool(rs.scalar())
 
-
     def has_sequence(self, connection, sequence_name, schema=None):
         if schema is None:
             schema = self._get_default_schema_name(connection)
@@ -95,7 +90,6 @@ class VerticaDialect(PGDialect):
         rs = connection.execute(query)
         return bool(rs.scalar())
 
-
     def has_type(self, connection, type_name, schema=None):
         query = ("SELECT EXISTS ("
                  "SELECT type_name FROM v_catalog.types "
@@ -103,7 +97,6 @@ class VerticaDialect(PGDialect):
                  ")") % (type_name)
         rs = connection.execute(query)
         return bool(rs.scalar())
-
 
     def _get_server_version_info(self, connection):
         v = connection.scalar("select version()")
@@ -116,17 +109,14 @@ class VerticaDialect(PGDialect):
                 "Could not determine version from string '%s'" % v)
         return tuple([int(x) for x in m.group(1, 2, 3) if x is not None])
 
-
     def _get_default_schema_name(self, connection):
         return connection.scalar("select current_schema()")
-
 
     @reflection.cache
     def get_schema_names(self, connection, **kw):
         query = "SELECT schema_name FROM v_catalog.schemata"
         rs = connection.execute(query)
         return [row[0] for row in rs if not row[0].startswith('v_')]
-
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
@@ -138,7 +128,6 @@ class VerticaDialect(PGDialect):
         rs = connection.execute(' '.join(s))
         return [row[0] for row in rs]
 
-
     @reflection.cache
     def get_view_names(self, connection, schema=None, **kw):
         s = ["SELECT table_name FROM v_catalog.views"]
@@ -148,7 +137,6 @@ class VerticaDialect(PGDialect):
 
         rs = connection.execute(' '.join(s))
         return [row[0] for row in rs]
-
 
     @reflection.cache
     def get_columns(self, connection, table_name, schema=None, **kw):
@@ -186,21 +174,17 @@ class VerticaDialect(PGDialect):
             })
         return columns
 
-
     # constraints are enforced on selects, but returning nothing for these
     # methods allows table introspection to work
 
     def get_pk_constraint(self, bind, table_name, schema, **kw):
         return {'constrained_columns': [], 'name': 'undefined'}
 
-
     def get_foreign_keys(self, connection, table_name, schema, **kw):
         return []
 
-
     def get_indexes(self, connection, table_name, schema, **kw):
         return []
-
 
     # Disable index creation since that's not a thing in Vertica.
     def visit_create_index(self, create):
